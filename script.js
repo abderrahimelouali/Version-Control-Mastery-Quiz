@@ -1,3 +1,5 @@
+// app.js
+
 import {
   easyQuestions,
   intermediateQuestions,
@@ -17,7 +19,7 @@ const questionNum = document.querySelector(".question-num");
 const nextQuestionBtn = document.getElementById("nextQuestion");
 const resultBox = document.querySelector(".result-box");
 const resultText = document.querySelector(".result-text");
-const nextLevelBtn = document.getElementById("nextLevel");
+const nextLevelBtn = document.getElementById("nextLevel"); // The missing link!
 const completeBtn = document.getElementById("completeBtn");
 const retryBtn = document.getElementById("retry");
 const liveScore = document.getElementById("liveScore");
@@ -58,8 +60,19 @@ function startLevel(level, questions) {
   appState.currentQuestionIndex = 0;
   appState.currentScore = 0;
   appState.userAnswers = [];
+  mistakesSection.classList.add("hidden");
 
   renderQuestion();
+  updateLiveScore();
+}
+
+// ========================
+// UPDATE LIVE SCORE
+// ========================
+function updateLiveScore() {
+  const totalQuestions = appState.currentQuestions.length;
+  const scoreCalc = Math.round((appState.currentScore / totalQuestions) * 100);
+  liveScore.textContent = `${scoreCalc}%`;
 }
 
 // ========================
@@ -73,7 +86,6 @@ function renderQuestion() {
   const currentQ = appState.currentQuestions[appState.currentQuestionIndex];
   questionText.textContent = currentQ.question;
 
-  // Populate choices
   currentQ.choices.forEach((choice, idx) => {
     const label = document.createElement("label");
     const input = document.createElement("input");
@@ -91,60 +103,52 @@ function renderQuestion() {
   questionNum.textContent = `Question ${appState.currentQuestionIndex + 1} of ${
     appState.currentQuestions.length
   }`;
-
-  // Update live score (fixed calculation)
-  const scoreCalc = Math.round(
-    (appState.currentScore / (appState.currentQuestionIndex || 1)) * 100
-  );
-  liveScore.textContent = `${scoreCalc}%`;
 }
-
-// ========================
-// NEXT QUESTION BUTTON
-// ========================
-nextQuestionBtn.addEventListener("click", () => {
-  const selected = document.querySelector('input[name="choice"]:checked');
-  if (!selected) return;
-
-  const currentQ = appState.currentQuestions[appState.currentQuestionIndex];
-  const userAnswer = parseInt(selected.value);
-  const isCorrect = userAnswer === currentQ.correctIndex;
-
-  // Save user answer
-  appState.userAnswers.push({
-    question: currentQ.question,
-    userAnswer: userAnswer,
-    correctAnswer: currentQ.correctIndex,
-    choices: currentQ.choices,
-    isCorrect: isCorrect,
-  });
-
-  if (isCorrect) appState.currentScore += 1;
-
-  // Move to next question or show result
-  if (appState.currentQuestionIndex < appState.currentQuestions.length - 1) {
-    appState.currentQuestionIndex += 1;
-    renderQuestion();
-  } else {
-    displayResult();
-  }
-
-  // Update live score after answering
-  const scoreCalc = Math.round(
-    (appState.currentScore / (appState.currentQuestionIndex + 1)) * 100
-  );
-  liveScore.textContent = `${scoreCalc}%`;
-});
 
 // ========================
 // DISPLAY RESULT
 // ========================
 function displayResult() {
+  // Calculate final score
   const scorePercent = Math.round(
     (appState.currentScore / appState.currentQuestions.length) * 100
   );
+
+  // Hide quiz and show result box
   quizBox.classList.add("hidden");
   resultBox.classList.remove("hidden");
+
+  // Reset button visibility
+  retryBtn.classList.remove("hidden");
+  nextLevelBtn.classList.add("hidden");
+  completeBtn.classList.add("hidden");
+
+  // Update result text and buttons
+  if (appState.currentLevel === "expert" && scorePercent >= 80) {
+    resultText.textContent = `🏆 You are a Git Legend! Score: ${scorePercent}%`;
+    retryBtn.classList.add("hidden");
+    completeBtn.classList.remove("hidden");
+  } else if (scorePercent === 100) {
+    resultText.textContent = `Perfect! You got ${scorePercent}%`;
+    retryBtn.classList.add("hidden");
+    // Only show next level if NOT expert
+    if (appState.currentLevel !== "expert") {
+      nextLevelBtn.classList.remove("hidden");
+    } else {
+      completeBtn.classList.remove("hidden");
+    }
+  } else if (scorePercent >= 80) {
+    resultText.textContent = `Well done! You passed with ${scorePercent}%`;
+    retryBtn.classList.add("hidden");
+    // Only show next level if NOT expert
+    if (appState.currentLevel !== "expert") {
+      nextLevelBtn.classList.remove("hidden");
+    }
+  } else if (scorePercent >= 50) {
+    resultText.textContent = `You're close! You scored ${scorePercent}%`;
+  } else {
+    resultText.textContent = `Keep learning! Score: ${scorePercent}%`;
+  }
 
   // Update high score if beaten
   if (scorePercent > appState.highScores[appState.currentLevel]) {
@@ -154,55 +158,28 @@ function displayResult() {
     ).textContent = scorePercent + "%";
   }
 
-  // Display mistakes if any
+  // Show mistakes if any
   const mistakes = appState.userAnswers.filter((a) => !a.isCorrect);
   if (mistakes.length > 0) {
     mistakesSection.classList.remove("hidden");
-    mistakesList.innerHTML = "";
-    mistakes.forEach((mistake) => {
+    mistakesList.innerHTML = ""; // clear previous
+
+    mistakes.forEach((m) => {
       const item = document.createElement("div");
       item.className = "mistake-item";
       item.innerHTML = `
-        <div class="mistake-question">Q: ${mistake.question}</div>
+        <div class="mistake-question">Q: ${m.question}</div>
         <div class="mistake-answer wrong">Your answer: ${
-          mistake.choices[mistake.userAnswer]
+          m.choices[m.userAnswer]
         }</div>
         <div class="mistake-answer correct">Correct answer: ${
-          mistake.choices[mistake.correctAnswer]
+          m.choices[m.correctAnswer]
         }</div>
       `;
       mistakesList.appendChild(item);
     });
   } else {
     mistakesSection.classList.add("hidden");
-  }
-
-  // Display appropriate result text and buttons
-  if (appState.currentLevel === "expert" && scorePercent >= 80) {
-    resultText.textContent = `🏆 You are a Git Legend! Score: ${scorePercent}%`;
-    retryBtn.classList.add("hidden");
-    nextLevelBtn.classList.add("hidden");
-    completeBtn.classList.remove("hidden");
-  } else if (scorePercent === 100) {
-    resultText.textContent = `Perfect! You got ${scorePercent}%`;
-    retryBtn.classList.add("hidden");
-    nextLevelBtn.classList.remove("hidden");
-    completeBtn.classList.add("hidden");
-  } else if (scorePercent >= 80) {
-    resultText.textContent = `Well done! You passed with ${scorePercent}%`;
-    retryBtn.classList.add("hidden");
-    nextLevelBtn.classList.remove("hidden");
-    completeBtn.classList.add("hidden");
-  } else if (scorePercent >= 50) {
-    resultText.textContent = `You're close! You scored ${scorePercent}%`;
-    retryBtn.classList.remove("hidden");
-    nextLevelBtn.classList.add("hidden");
-    completeBtn.classList.add("hidden");
-  } else {
-    resultText.textContent = `Keep learning! Score: ${scorePercent}%`;
-    retryBtn.classList.remove("hidden");
-    nextLevelBtn.classList.add("hidden");
-    completeBtn.classList.add("hidden");
   }
 }
 
@@ -218,11 +195,8 @@ function resetQuiz() {
 // ========================
 // BUTTON EVENT LISTENERS
 // ========================
-retryBtn.addEventListener("click", () => {
-  resetQuiz();
-  startLevel(appState.currentLevel, appState.currentQuestions);
-});
 
+// Next Question Button Logic
 nextQuestionBtn.addEventListener("click", () => {
   const selected = document.querySelector('input[name="choice"]:checked');
   if (!selected) return;
@@ -231,25 +205,23 @@ nextQuestionBtn.addEventListener("click", () => {
   const userAnswer = parseInt(selected.value);
   const isCorrect = userAnswer === currentQ.correctIndex;
 
-  // ✅ Record the user's answer
-  appState.userAnswers.push({
-    question: currentQ.question,
-    userAnswer,
-    correctAnswer: currentQ.correctIndex,
-    choices: currentQ.choices,
-    isCorrect
-  });
-
-  // ✅ Increment score only if correct
+  // 1. Update score
   if (isCorrect) appState.currentScore += 1;
 
-  // ✅ Live score: based on TOTAL questions in the current level
-  const totalQuestions = appState.currentQuestions.length;
-  const live = Math.round((appState.currentScore / totalQuestions) * 100);
-  liveScore.textContent = `${live}%`;
+  // 2. Save user answer
+  appState.userAnswers.push({
+    question: currentQ.question,
+    userAnswer: userAnswer,
+    correctAnswer: currentQ.correctIndex,
+    choices: currentQ.choices,
+    isCorrect: isCorrect,
+  });
 
-  // Move to next question or result
-  if (appState.currentQuestionIndex < totalQuestions - 1) {
+  // 3. Update live score
+  updateLiveScore();
+
+  // 4. Move to next question or show result
+  if (appState.currentQuestionIndex < appState.currentQuestions.length - 1) {
     appState.currentQuestionIndex += 1;
     renderQuestion();
   } else {
@@ -257,6 +229,41 @@ nextQuestionBtn.addEventListener("click", () => {
   }
 });
 
+retryBtn.addEventListener("click", () => {
+  resetQuiz();
+  startLevel(appState.currentLevel, appState.currentQuestions);
+});
+
+// 🚀 FIX: NEXT LEVEL BUTTON LOGIC ADDED 🚀
+nextLevelBtn.addEventListener("click", () => {
+  const currentLevel = appState.currentLevel;
+  let nextLevelName;
+  let nextLevelQuestions;
+
+  // Determine the next level and its questions
+  switch (currentLevel) {
+    case "easy":
+      nextLevelName = "intermediate";
+      nextLevelQuestions = intermediateQuestions;
+      break;
+    case "intermediate":
+      nextLevelName = "hard";
+      nextLevelQuestions = hardQuestions;
+      break;
+    case "hard":
+      nextLevelName = "expert";
+      nextLevelQuestions = expertQuestions;
+      break;
+    default:
+      alert("You have completed all levels! Returning to home.");
+      homeBtn.click(); // Trigger the home button logic
+      return;
+  }
+
+  // Start the next level
+  resetQuiz();
+  startLevel(nextLevelName, nextLevelQuestions);
+});
 
 completeBtn.addEventListener("click", () => {
   if (confirm("Congratulations on completing all levels! Return to home?")) {
@@ -264,7 +271,7 @@ completeBtn.addEventListener("click", () => {
   }
 });
 
-// Level cards click
+// Level cards click listeners
 document
   .getElementById("easy")
   .addEventListener("click", () => startLevel("easy", easyQuestions));
@@ -290,5 +297,6 @@ homeBtn.addEventListener("click", () => {
     quizBox.classList.add("hidden");
     resultBox.classList.add("hidden");
     resetQuiz();
+    mistakesSection.classList.add("hidden");
   }
 });
