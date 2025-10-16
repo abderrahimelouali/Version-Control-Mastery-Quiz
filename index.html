@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css">
+  <title>Version Control Mastery Quiz</title>
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <h1>Version Control Mastery Quiz</h1>
+      <p class="slogan">Challenge yourself and master version control systems</p>
+    </div>
+    <nav class="nav-bar">
+      <button id="homeBtn">Home</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="levels-cards">
+      <div class="level-card" id="easy">
+        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=250&fit=crop" alt="Easy Level" />
+        <h4 class="level-title">Easy Level</h4>
+        <p class="high-score">High Score: <span>0%</span></p>
+      </div>
+
+      <div class="level-card" id="intermediate">
+        <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=400&h=250&fit=crop" alt="Intermediate Level" />
+        <h4 class="level-title">Intermediate Level</h4>
+        <p class="high-score">High Score: <span>0%</span></p>
+      </div>
+
+      <div class="level-card" id="hard">
+        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=250&fit=crop" alt="Hard Level" />
+        <h4 class="level-title">Hard Level</h4>
+        <p class="high-score">High Score: <span>0%</span></p>
+      </div>
+
+      <div class="level-card" id="expert">
+        <img src="https://images.unsplash.com/photo-1518773553398-650c184e0bb3?w=400&h=250&fit=crop" alt="Expert Level" />
+        <h4 class="level-title">Expert Level</h4>
+        <p class="high-score">High Score: <span>0%</span></p>
+      </div>
+    </section>
+
+    <section class="quiz-box hidden">
+      <h3 class="level-name"></h3>
+      <p class="info">Live Score: <span id="liveScore">0%</span></p>
+      <h4 class="question-text"></h4>
+      <div class="choices"></div>
+      <p class="question-num"></p>
+      <button id="nextQuestion" disabled>Next Question</button>
+    </section>
+
+    <section class="result-box hidden">
+      <h3>Result</h3>
+      <p class="result-text"></p>
+      <div class="mistakes-section hidden">
+        <h4>Review Your Mistakes</h4>
+        <div id="mistakesList"></div>
+      </div>
+      <div class="buttons">
+        <button id="retry" class="hidden">Retry Level</button>
+        <button id="nextLevel" class="hidden">Next Level</button>
+        <button id="completeBtn" class="hidden">Complete</button>
+        <a href="https://elouali.online/article/3" target="_blank" id="resources">Resources</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Made by Abderrahim El Ouali |
+      <a href="https://elouali.online" target="_blank">elouali.online</a> |
+      <a href="https://github.com/abderrahimelouali" target="_blank">GitHub</a>
+    </p>
+  </footer>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
